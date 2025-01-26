@@ -1,11 +1,31 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
+# Описываем Виртуальные машины
+MACHINES = {
+  # Указываем имя ВМ "kernel update"
+  :"kernel-update" => {
+              #Какой vm box будем использовать
+              :box_name => "generic/centos8s",
+              #Указываем box_version
+              :box_version => "4.3.4",
+              #Указываем количество ядер ВМ
+              :cpus => 2,
+              #Указываем количество ОЗУ в мегабайтах
+              :memory => 1024,
+            }
+}
 
-# All Vagrant configuration is done below. The "2" in Vagrant.configure
-# configures the configuration version (we support older styles for
-# backwards compatibility). Please don't change it unless you know what
-# you're doing.
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/trusty64"
-  config.vm.box_version = "20191107.0.0"
+  MACHINES.each do |boxname, boxconfig|
+    # Отключаем проброс общей папки в ВМ
+    config.vm.synced_folder ".", "/vagrant", disabled: true
+    # Применяем конфигурацию ВМ
+    config.vm.define boxname do |box|
+      box.vm.box = boxconfig[:box_name]
+      box.vm.box_version = boxconfig[:box_version]
+      box.vm.host_name = boxname.to_s
+      box.vm.provider "virtualbox" do |v|
+        v.memory = boxconfig[:memory]
+        v.cpus = boxconfig[:cpus]
+      end
+    end
+  end
 end
